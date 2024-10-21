@@ -1,0 +1,31 @@
+{% extends 'basic_auth.html' %}
+{% load custom_tags %}
+
+{% block content %}
+    <div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+        <div class="w-50 mx-auto">
+            {% if form.errors %}
+                <div>
+                {% for key,value in form.errors.items %}
+                    <div class="text-danger fw-bolder">{{value}}</div>
+                {% endfor %}
+                </div>
+            {% endif %}
+
+            <form method="post" enctype="multipart/form-data" class="form-floating w-75 mx-auto">
+                {% csrf_token %}
+
+                {% for field in form%}
+                <p>
+                    {{field.label|custom_label:required_fields|safe}}
+                    {{field}}
+                </p>
+                {% endfor %}
+
+                <button type="submit" class="btn-theme mb-1 w-100 border-0 p-2">Войти</button>
+                <a href="{% url 'authen:password-reset' %}" class="btn-theme mb-1 border-0 w-100 p-2">Забыл пароль</a>
+                <a href="{% url 'authen:register' %}" class="btn-theme mb-1 border-0 w-100 p-2">Регистрация</a>
+            </form>
+        </div>
+    </div>
+{% endblock %}

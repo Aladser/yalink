@@ -1,0 +1,8 @@
+asgiref==3.8.1
+Django==5.1.2
+load-dotenv==0.1.0
+python-dotenv==1.0.1
+sqlparse==0.5.1
+psycopg2-binary==2.9.9
+celery==5.4.0
+pillow==10.4.0

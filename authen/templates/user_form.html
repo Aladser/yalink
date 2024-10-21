@@ -1,0 +1,38 @@
+{% extends 'basic_auth.html' %}
+{% load custom_tags %}
+
+{% block content %}
+
+    <div class="pricing-header px-3 pb-md-4 mx-auto text-center">
+        <div class="w-50 mx-auto">
+            {% if form.errors %}
+                <ul>
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <li class="text-danger fw-bolder">{{error}}</li>
+                    {% endfor %}
+                {% endfor %}
+                </ul>
+            {% endif %}
+
+            <form method="post" enctype="multipart/form-data" class="form-floating">
+                <div class="w-75 mx-auto">
+                    {% csrf_token %}
+
+                    {% for field in form%}
+                    <p>
+                        {{field.label|custom_label:required_fields|safe}}
+                        {{field}}
+                    </p>
+                    {% endfor %}
+
+                    <button type="submit" class="btn-theme mb-1 w-100 border-0 p-2">Отправить</button>
+                    {%if header == "Регистрация пользователя" %}
+                        <a href="{% url 'authen:login' %}" class="btn-theme mb-1 w-100 border-0 p-2">Авторизация</a>
+                    {%endif%}
+                </div>
+            </form>
+        </div>
+    </div>
+
+{% endblock %}
