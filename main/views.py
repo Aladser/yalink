@@ -4,6 +4,8 @@ from django.views.generic import TemplateView
 import requests
 import urllib
 
+from main.services import get_shared_files_from_public_link
+
 element_types = {
     "dir": 'Папка',
     "file": 'Файл'
@@ -30,11 +32,9 @@ class MainView(TemplateView):
                 print(response.__dict__)
                 return context
 
+
             # ссылка на просмотр
             list_api_link = list_api_link_start + urllib.parse.quote(public_link)
-            # ссылка на загрузку
-            download_api_link = general_download_api_link_start + urllib.parse.quote(public_link)
-
             # проверка ссылки просмотра файлов
             response = requests.get(list_api_link)
             if response.status_code != 200:
@@ -42,24 +42,10 @@ class MainView(TemplateView):
                 print(response.__dict__)
                 return context
 
-            items_list = []
-            if response.json()['type'] == 'file':
-                # открывается публичный файл
-
-                item = response.json()
-                items_list.append({'name': item['name'], 'url': item['file']})
-            else:
-                # открывается публичная папка
-
-                items = response.json().get('_embedded', {}).get('items', [])
-                for item in items:
-                    elem_name = f"{element_types[item['type']]} {item['name']}"
-
-                    get_elem_download_url = f"{download_api_link}&path={item['path']}"
-                    get_elem_download_url_data = requests.get(get_elem_download_url)
-                    download_link = get_elem_download_url_data.json()['href']
-                    items_list.append({'name': elem_name, 'url': download_link})
-
+            # ссылка на загрузку
+            download_api_link = general_download_api_link_start + urllib.parse.quote(public_link)
+            response_data = response.json()
+            items_list = get_shared_files_from_public_link(download_api_link, response_data)
             context['items'] = items_list
             context['is_items'] = len(items_list) > 0
         else:
