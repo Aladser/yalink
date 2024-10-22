@@ -5,12 +5,12 @@
 <html lang="en">
     {% include 'components/head.html' %}
 
-    <body class="bgcolor-beige">
-        <div class="d-flex justify-content-between p-3 px-md-4 mb-3 shadow-theme bgcolor-dark-beige">
+    <body>
+        <div class="d-flex justify-content-between p-3 px-md-4 mb-3 shadow-theme bg-theme">
             {% include 'components/header-logo.html' %}
         </div>
 
-        <div class="container bgcolor-beige">
+        <div class="container bg-theme shadow-theme">
             <main>
                 {% include 'components/header.html' %}
                 {% block content %} {% endblock %}

@@ -1,0 +1,21 @@
+server {
+    listen 80;
+    server_name yalink.local;
+    error_log  /var/www/yalink/error_log  error;
+
+    location = /favicon.ico {access_log off; log_not_found off; }
+    location /static/ { 
+	    root /var/www/yalink;
+    }
+
+    location /media/ {
+	    root /var/www/yalink;
+    }
+
+    location / {
+    	add_header Cache-Control "max-age=0, no-cache, no-store, must-revalidate";
+	    add_header Pragma "no-cache";
+	    include proxy_params;
+	    proxy_pass http://unix:/var/www/yalink/yalink.sock;
+    }
+}

@@ -1,0 +1,14 @@
+[Unit]
+Description=psdia-daemon
+After=network.target
+
+[Service]
+User=aladser
+Group=www-data
+Restart=on-failure
+WorkingDirectory=/var/www/yalink
+ExecStart=/var/www/yalink/venv/bin/gunicorn --access-logfile - --workers 3 --bind unix:/var/www/yalink/yalink.sock config.wsgi
+
+[Install]
+WantedBy=multi-user.target
+
