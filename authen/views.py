@@ -1,16 +1,26 @@
+import os
 from secrets import token_hex
+from urllib.request import Request
 
+from django.contrib.auth import login as auth_login
 from django.contrib.auth.views import LoginView, PasswordResetCompleteView
 from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmView
+from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, UpdateView, TemplateView
+from requests_oauthlib import OAuth2Session
 
 from authen.forms import RegisterForm, AuthForm, ProfileForm, CustomPasswordResetForm, CustomSetPasswordForm
 from authen.models import User
 from authen.services import verificate_user
 from authen.tasks import send_email
 from libs.authen_mixin import AuthenMixin
+
+CLIENT_ID = os.getenv("ClientID")
+CLIENT_SECRET = os.getenv("ClientSecret")
+AUTH_URL = "https://oauth.yandex.ru/authorize"
+TOKEN_URL = "https://oauth.yandex.ru/token"
 
 
 # АВТОРИЗАЦИЯ
@@ -19,9 +29,43 @@ class UserLoginView(AuthenMixin, LoginView):
         'title': "авторизация",
         'header': "Авторизация пользователя",
     }
-
     template_name = 'login.html'
     form_class = AuthForm
+
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data()
+
+        # ссылка яндекс-авторизации
+        oauth = OAuth2Session(client_id=CLIENT_ID)
+        context['authorization_url'], state = oauth.authorization_url(AUTH_URL, force_confirm="true")
+
+        return context
+
+
+# АВТОРИЗАЦИЯ ЧЕРЕЗ ЯНДЕКС
+def yalogin(request: Request):
+    email = request.GET['cid'] + "@yandex.ru"
+
+    oauth = OAuth2Session(client_id=CLIENT_ID)
+    token = oauth.fetch_token(
+        token_url=TOKEN_URL,
+        code=request.GET['code'],
+        client_secret=CLIENT_SECRET
+    )
+
+    # поиск пользователя
+    user = User.objects.filter(email=email)
+    if user.exists():
+        user = user.first()
+    else:
+        user = User()
+        user.email = email
+
+    user.yandex_token = token["access_token"]
+    user.save()
+    auth_login(request, user)
+
+    return HttpResponseRedirect('/')
 
 
 # РЕГИСТРАЦИЯ

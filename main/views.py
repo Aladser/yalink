@@ -1,3 +1,5 @@
+from http.client import responses
+
 from celery.worker.state import requests
 from django.views.generic import TemplateView
 
@@ -13,9 +15,13 @@ class MainView(TemplateView):
 
         # получение файлов публичной ссылки
         if 'link' in self.request.GET:
-            link = self.request.GET['link']
-            response = requests.get(link, allow_redirects=True)
-            print(link)
+            public_link = self.request.GET['link']
+            print(f"Сcылка: {public_link}")
+
+            direct_link = public_link.replace('https://disk.yandex.ru/d/',
+                                              'https://downloader.disk.yandex.ru/disk/').replace('https://', 'https://')
+
+            response = requests.get(direct_link)
             print(response)
 
         return context

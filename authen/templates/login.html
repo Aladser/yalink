@@ -25,6 +25,7 @@
                 <button type="submit" class="btn-theme mb-1 w-100 border-0 p-2">Войти</button>
                 <a href="{% url 'authen:password-reset' %}" class="btn-theme mb-1 border-0 w-100 p-2">Забыл пароль</a>
                 <a href="{% url 'authen:register' %}" class="btn-theme mb-1 border-0 w-100 p-2">Регистрация</a>
+                <a href="{{authorization_url}}" class="btn-theme mb-1 border-0 w-100 p-2">Яндекс авторизация</a>
             </form>
         </div>
     </div>
