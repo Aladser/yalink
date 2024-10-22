@@ -1,3 +1,5 @@
+import os
+
 from django.views.generic import TemplateView
 import requests
 import urllib
@@ -21,7 +23,7 @@ class MainView(TemplateView):
         # получение файлов публичной ссылки
         if 'link' in self.request.GET:
             # проверка корректности ссылки
-            public_link = self.request.GET['link']
+            public_link = context["search_url"] = self.request.GET['link']
             response = requests.get(public_link)
             if response.status_code != 200:
                 context['error'] = response.status_code
@@ -51,14 +53,16 @@ class MainView(TemplateView):
 
                 items = response.json().get('_embedded', {}).get('items', [])
                 for item in items:
-                    elem_name = element_types[item['type']] + " " + item['name']
+                    elem_name = f"{element_types[item['type']]} {item['name']}"
 
-                    get_elem_download_url = download_api_link + "&path=" + item['path']
+                    get_elem_download_url = f"{download_api_link}&path={item['path']}"
                     get_elem_download_url_data = requests.get(get_elem_download_url)
                     download_link = get_elem_download_url_data.json()['href']
                     items_list.append({'name': elem_name, 'url': download_link})
 
             context['items'] = items_list
             context['is_items'] = len(items_list) > 0
+        else:
+            context["search_url"] = os.getenv("DEFAULT_SEARCH_URL") or ""
 
         return context
