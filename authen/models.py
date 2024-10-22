@@ -8,9 +8,11 @@ from config.settings import NULLABLE, MEDIA_ROOT
 class User(AbstractUser):
     username = None
     email = models.EmailField(verbose_name='почта', unique=True)
+    password = models.CharField(verbose_name="password", max_length=128, **NULLABLE)
     phone = models.CharField(verbose_name='телефон', unique=True, max_length=20, **NULLABLE)
     avatar = models.ImageField(verbose_name='аватар', upload_to='images/', **NULLABLE)
     token = models.CharField(verbose_name="Токен", **NULLABLE, max_length=100)
+    yandex_token = models.CharField(verbose_name="Яндекс токен", **NULLABLE, max_length=255)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []

@@ -8,6 +8,8 @@ app_name = AuthenConfig.name
 
 urlpatterns = [
     path('login/', UserLoginView.as_view(), name='login'),
+    path('yalogin/', yalogin, name='yalogin'),
+
     path('logout/', LogoutView.as_view(), name='logout'),
     path('register/', RegisterView.as_view(), name='register'),
     path('register-complete/', RegisterCompleteView.as_view(), name='register-complete'),
