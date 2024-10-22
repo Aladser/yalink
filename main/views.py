@@ -3,39 +3,62 @@ import requests
 import urllib
 
 element_types = {
-    "dir": 'папка',
-    "file": 'файл'
+    "dir": 'Папка',
+    "file": 'Файл'
 }
-general_download_api_link = 'https://cloud-api.yandex.net/v1/disk/public/resources/download?public_key='
-general_list_api_link = 'https://cloud-api.yandex.net/v1/disk/public/resources?public_key='
+# начало ссылки на просмотр файлов
+list_api_link_start = 'https://cloud-api.yandex.net/v1/disk/public/resources?public_key='
+# начало ссылки на скачивание файла
+general_download_api_link_start = 'https://cloud-api.yandex.net/v1/disk/public/resources/download?public_key='
+
 
 class MainView(TemplateView):
     template_name = 'index.html'
 
-
     def get_context_data(self, **kwargs):
-        context= super().get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
 
         # получение файлов публичной ссылки
         if 'link' in self.request.GET:
+            # проверка корректности ссылки
             public_link = self.request.GET['link']
             response = requests.get(public_link)
-            print(response)
+            if response.status_code != 200:
+                context['error'] = response.status_code
+                print(response.__dict__)
+                return context
 
             # ссылка на просмотр
-            list_api_link = general_list_api_link + urllib.parse.quote(public_link)
+            list_api_link = list_api_link_start + urllib.parse.quote(public_link)
+            # ссылка на загрузку
+            download_api_link = general_download_api_link_start + urllib.parse.quote(public_link)
+
+            # проверка ссылки просмотра файлов
             response = requests.get(list_api_link)
-            print(response)
+            if response.status_code != 200:
+                context['error'] = response.status_code
+                print(response.__dict__)
+                return context
 
-            if response.status_code == 200:
-                data = response.json()
-                items = data.get('_embedded', {}).get('items', [])
+            items_list = []
+            if response.json()['type'] == 'file':
+                # открывается публичный файл
 
-                print()
-                for item in items:
-                    type = element_types[item['type']]
-                    print(f"public_key: {item['public_key']}, {type} {item['name']}")
+                item = response.json()
+                items_list.append({'name': item['name'], 'url': item['file']})
             else:
-                print("Ошибка при получении данных:", response.status_code)
+                # открывается публичная папка
+
+                items = response.json().get('_embedded', {}).get('items', [])
+                for item in items:
+                    elem_name = element_types[item['type']] + " " + item['name']
+
+                    get_elem_download_url = download_api_link + "&path=" + item['path']
+                    get_elem_download_url_data = requests.get(get_elem_download_url)
+                    download_link = get_elem_download_url_data.json()['href']
+                    items_list.append({'name': elem_name, 'url': download_link})
+
+            context['items'] = items_list
+            context['is_items'] = len(items_list) > 0
 
         return context
