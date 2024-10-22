@@ -17,10 +17,10 @@ from authen.services import verificate_user
 from authen.tasks import send_email
 from libs.authen_mixin import AuthenMixin
 
-CLIENT_ID = os.getenv("ClientID")
-CLIENT_SECRET = os.getenv("ClientSecret")
-AUTH_URL = "https://oauth.yandex.ru/authorize"
-TOKEN_URL = "https://oauth.yandex.ru/token"
+YANDEX_CLIENT_ID = os.getenv("ClientID")
+YANDEX_CLIENT_SECRET = os.getenv("ClientSecret")
+YANDEX_AUTH_URL = "https://oauth.yandex.ru/authorize"
+YANDEX_TOKEN_URL = "https://oauth.yandex.ru/token"
 
 
 # АВТОРИЗАЦИЯ
@@ -36,21 +36,21 @@ class UserLoginView(AuthenMixin, LoginView):
         context = super().get_context_data()
 
         # ссылка яндекс-авторизации
-        oauth = OAuth2Session(client_id=CLIENT_ID)
-        context['authorization_url'], state = oauth.authorization_url(AUTH_URL, force_confirm="true")
+        oauth = OAuth2Session(client_id=YANDEX_CLIENT_ID)
+        context['authorization_url'], state = oauth.authorization_url(YANDEX_AUTH_URL, force_confirm="true")
 
         return context
 
 
 # АВТОРИЗАЦИЯ ЧЕРЕЗ ЯНДЕКС
-def yalogin(request: Request):
+def yalogin(request: Request)->HttpResponseRedirect:
     email = request.GET['cid'] + "@yandex.ru"
 
-    oauth = OAuth2Session(client_id=CLIENT_ID)
+    oauth = OAuth2Session(client_id=YANDEX_CLIENT_ID)
     token = oauth.fetch_token(
-        token_url=TOKEN_URL,
+        token_url=YANDEX_TOKEN_URL,
         code=request.GET['code'],
-        client_secret=CLIENT_SECRET
+        client_secret=YANDEX_CLIENT_SECRET
     )
 
     # поиск пользователя
