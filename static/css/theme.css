@@ -1,0 +1,86 @@
+html {
+    --color-beige: #f8f8d9;
+    --color-dark-beige: #f3f3ae;
+    --color-jade: #00a86b;
+    --color-jade-30: rgba(0,168,107, 0.3);
+    --color-khaki: #78866b;
+    --color-beige-gray: #646462;
+
+    --color-theme-light: rgb(250,250,250);
+}
+
+.bg-theme {
+    background-color: #00CF00;
+}
+.text-theme {
+    color: var(--color-theme-light);
+}
+
+.bgcolor-beige {
+    background-color: var(--color-beige);
+}
+.bgcolor-dark-beige {
+    background-color: var(--color-dark-beige);
+}
+.color-beige {
+    color: var(--color-beige);
+}
+
+.bgcolor-jade {
+    background-color:var(--color-jade);
+}
+.color-jade {
+    color: var(--color-jade);
+}
+
+.color-khaki {
+    color: var(--color-khaki);
+}
+
+.color-beige-gray {
+    color: var(--color-beige-gray);
+}
+
+.border-theme {
+    border:1px solid var(--color-jade);
+}
+
+.border-bottom-theme {
+    border-bottom:1px solid var(--color-jade);
+}
+
+.border-bottom-2-theme {
+    border-bottom: 2px solid var(--color-jade);
+}
+
+.border-beige-gray {
+    border:1px solid var(--color-beige-gray);
+}
+
+.shadow-theme{
+    box-shadow: 0px -1px 8px 9px var(--color-jade-30);
+}
+
+/* кнопка */
+.btn-theme {
+    display: inline-block;
+    width: 10em;
+    text-align: center;
+    background-color:var(--color-jade);
+    color: var(--color-theme-light);
+    text-decoration: none;
+    padding: 0.9em 1.8em;
+    border-radius: 0.6em;
+    font-size:1.1em;
+}
+.btn-theme:hover {
+    opacity: 0.7;
+}
+
+.header-link{
+    text-decoration:none;
+    color:var(--color-theme-light);
+}
+.header-link:hover{
+    opacity: 0.75;
+}
