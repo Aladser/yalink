@@ -1,12 +1,15 @@
-from http.client import responses
-
-from celery.worker.state import requests
 from django.views.generic import TemplateView
+import requests
+import urllib
 
+element_types = {
+    "dir": 'папка',
+    "file": 'файл'
+}
+general_download_api_link = 'https://cloud-api.yandex.net/v1/disk/public/resources/download?public_key='
+general_list_api_link = 'https://cloud-api.yandex.net/v1/disk/public/resources?public_key='
 
 class MainView(TemplateView):
-    extra_context = {
-    }
     template_name = 'index.html'
 
 
@@ -16,12 +19,23 @@ class MainView(TemplateView):
         # получение файлов публичной ссылки
         if 'link' in self.request.GET:
             public_link = self.request.GET['link']
-            print(f"Сcылка: {public_link}")
-
-            direct_link = public_link.replace('https://disk.yandex.ru/d/',
-                                              'https://downloader.disk.yandex.ru/disk/').replace('https://', 'https://')
-
-            response = requests.get(direct_link)
+            response = requests.get(public_link)
             print(response)
+
+            # ссылка на просмотр
+            list_api_link = general_list_api_link + urllib.parse.quote(public_link)
+            response = requests.get(list_api_link)
+            print(response)
+
+            if response.status_code == 200:
+                data = response.json()
+                items = data.get('_embedded', {}).get('items', [])
+
+                print()
+                for item in items:
+                    type = element_types[item['type']]
+                    print(f"public_key: {item['public_key']}, {type} {item['name']}")
+            else:
+                print("Ошибка при получении данных:", response.status_code)
 
         return context
