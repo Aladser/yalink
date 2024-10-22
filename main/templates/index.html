@@ -9,13 +9,19 @@
             <input type="submit" value="Получить" class="btn-theme p-1 border-0">
         </form>
 
-        <h4 class="text-center fw-bolder color-jade p-3">Содержимое ссылки</h4>
-        {% if is_items %}
-            <div class="mx-auto">
-                {% for item in items %}
-                <a href="{{item.url}}" class="d-block border-bottom p-2 w-75 mx-auto text-black fw-bolder">{{item.name}}</a>
-                {% endfor %}
-            </div>
-        {%endif%}
+        {% if error%}
+            <h4 class="text-center fw-bolder color-jade p-3">Ошибка</h4>
+            <p class="fs-4">{{error}}</p>
+        {% elif items %}
+            <h4 class="text-center fw-bolder color-jade p-3">Содержимое ссылки</h4>
+            {% if is_items %}
+                <div class="mx-auto">
+                    {% for item in items %}
+                    <a href="{{item.url}}" class="d-block border-bottom p-2 w-75 mx-auto text-black fw-bolder">{{item.name}}</a>
+                    {% endfor %}
+                </div>
+            {%endif%}
+        {% endif %}
+
     </div>
 {% endblock %}
