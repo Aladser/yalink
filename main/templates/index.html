@@ -4,9 +4,18 @@
 {% block content %}
     <div class="container text-center">
         <h3 class="text-center fw-bolder color-jade p-3">Введите публичную ссылку для просмотра содержимого</h3>
-        <form method="GET" action="{% url 'index' %}">
-            <input type="url" name="link" placeholder="Введите ссылку" class="w-50 p-1 rounded border-1" required value="https://disk.yandex.ru/d/CjsSyPE_ARousw">
+        <form method="GET" action="{% url 'index' %}" class="mb-4">
+            <input type="url" name="link" placeholder="Введите ссылку" class="w-50 p-1 rounded border-1" required value="{{search_url}}">
             <input type="submit" value="Получить" class="btn-theme p-1 border-0">
         </form>
+
+        <h4 class="text-center fw-bolder color-jade p-3">Содержимое ссылки</h4>
+        {% if is_items %}
+            <div class="mx-auto">
+                {% for item in items %}
+                <a href="{{item.url}}" class="d-block border-bottom p-2 w-75 mx-auto text-black fw-bolder">{{item.name}}</a>
+                {% endfor %}
+            </div>
+        {%endif%}
     </div>
 {% endblock %}
