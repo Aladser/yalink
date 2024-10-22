@@ -2,9 +2,14 @@ from django.views.generic import TemplateView
 import requests
 import urllib
 
+element_types = {
+    "dir": 'папка',
+    "file": 'файл'
+}
+general_download_api_link = 'https://cloud-api.yandex.net/v1/disk/public/resources/download?public_key='
+general_list_api_link = 'https://cloud-api.yandex.net/v1/disk/public/resources?public_key='
+
 class MainView(TemplateView):
-    extra_context = {
-    }
     template_name = 'index.html'
 
 
@@ -17,10 +22,8 @@ class MainView(TemplateView):
             response = requests.get(public_link)
             print(response)
 
-            # Ссылка на скачивание
-            download_api_link = 'https://cloud-api.yandex.net/v1/disk/public/resources/download' + '?public_key=' + urllib.parse.quote(public_link)
             # ссылка на просмотр
-            list_api_link = 'https://cloud-api.yandex.net/v1/disk/public/resources' + '?public_key=' + urllib.parse.quote(public_link)
+            list_api_link = general_list_api_link + urllib.parse.quote(public_link)
             response = requests.get(list_api_link)
             print(response)
 
@@ -28,9 +31,10 @@ class MainView(TemplateView):
                 data = response.json()
                 items = data.get('_embedded', {}).get('items', [])
 
-                print("Список файлов и папок:")
+                print()
                 for item in items:
-                    print(f"Название: {item['name']}, Тип: {item['type']}, Размер: {item.get('size', 'N/A')} байт")
+                    type = element_types[item['type']]
+                    print(f"public_key: {item['public_key']}, {type} {item['name']}")
             else:
                 print("Ошибка при получении данных:", response.status_code)
 
