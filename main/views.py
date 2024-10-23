@@ -20,6 +20,8 @@ general_download_api_link_start = 'https://cloud-api.yandex.net/v1/disk/public/r
 
 
 class MainView(TemplateView):
+    """Представление главной страницы"""
+
     template_name = 'index.html'
 
     def get(self, request, *args, **kwargs):
@@ -31,17 +33,18 @@ class MainView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        # url строки поиска
         context["search_url"] = os.getenv("DEFAULT_SEARCH_URL") or ""
 
         if not 'link' in self.request.GET:
             return context
 
-        # получение файлов публичной ссылки
         public_link = context["search_url"] = self.request.GET['link']
-        # ссылка на просмотр
+        """ссылка на общедоступный Яндекс ресурс"""
         list_api_link = list_api_link_start + urllib.parse.quote(public_link)
-        # ссылка на загрузку
+        """ссылка на просмотр Яндекс ресурса"""
         download_api_link = general_download_api_link_start + urllib.parse.quote(public_link)
+        """ссылка на загрузку Яндекс ресурса"""
 
         # проверка корректности ссылки
         public_link_components = urlparse(public_link)
