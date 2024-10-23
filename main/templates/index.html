@@ -14,13 +14,26 @@
             <p class="fs-4">{{error}}</p>
         {% elif items %}
             <h4 class="text-center fw-bolder color-jade p-3">Содержимое ссылки</h4>
-            {% if is_items %}
-                <div class="mx-auto">
-                    {% for item in items %}
-                    <a href="{{item.url}}" class="d-block border-bottom p-2 w-75 mx-auto text-black fw-bolder" title="Нажмите для скачивания">{{item.name}}</a>
-                    {% endfor %}
-                </div>
-            {%endif%}
+            <span>Тип:</span>
+            <select class="p-2" id="type-select">
+                {% for type in types %}
+                <option>{% if type != None %}{{type}}{%else%}папка{% endif %}</option>
+                {% endfor %}
+            </select>
+            <table class="table mx-auto w-100">
+                <tr>
+                    <th>Название</th>
+                    <th>Тип</th>
+                    <th></th>
+                </tr>
+                {% for item in items %}
+                <tr>
+                    <td class="w-50">{{item.name}}</td>
+                    <td>{% if item.type != None %}{{item.type}}{%else%}папка{% endif %}</td>
+                    <td><a href="{{item.url}}" class="btn btn-secondary">Скачать</a></td>
+                </tr>
+                {% endfor %}
+            </table>
         {% endif %}
 
     </div>

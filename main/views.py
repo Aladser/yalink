@@ -3,9 +3,11 @@ import urllib
 from urllib.parse import urlparse
 
 import requests
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.views.generic import TemplateView
+
 
 from main.services import get_shared_files_from_public_link
 
@@ -25,9 +27,13 @@ class MainView(TemplateView):
     template_name = 'index.html'
 
     def get(self, request, *args, **kwargs):
+        print(self.request.GET)
+
         # перенравление на страницу авторизации, если идет запрос на получение содержимого ссылки
         if 'link' in self.request.GET and not request.user.is_authenticated:
             return redirect(reverse("authen:login"))
+        if 'type' in self.request.GET:
+            return JsonResponse({"response":'Принято'});
 
         return super().get(request, *args, **kwargs)
 
@@ -70,6 +76,7 @@ class MainView(TemplateView):
             return context
 
         items_list = get_shared_files_from_public_link(download_api_link, response.json())
+        context['types'] = [''] + sorted(list(set(elem['type'] for elem in items_list)))
         context['items'] = items_list
         context['is_items'] = len(items_list) > 0
 

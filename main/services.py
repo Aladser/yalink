@@ -30,6 +30,7 @@ def get_shared_files_from_public_link(download_api_link: str, response_data: dic
             get_elem_download_url = f"{download_api_link}&path={item['path']}"
             get_elem_download_url_data = requests.get(get_elem_download_url)
             download_link = get_elem_download_url_data.json()['href']
-            items_list.append({'name': elem_name, 'url': download_link})
+            elem_type = item.get('media_type') if item.get('media_type') is not None else "Папка"
+            items_list.append({'name': elem_name, 'url': download_link, 'type': elem_type})
 
     return items_list
