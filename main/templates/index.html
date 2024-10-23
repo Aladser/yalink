@@ -32,7 +32,7 @@
                     <td class="w-50">{{item.name}}</td>
                     <td class="public-link-row__type">{% if item.type != None %}{{item.type}}{%else%}папка{% endif %}</td>
                     <td>
-                        <a href="{{item.url}}" class="public-link-row__download-link btn btn-secondary">Скачать</a>
+                        <a href="{{item.url}}" download= target = '_blank' class="public-link-row__download-link btn btn-secondary">Скачать</a>
                     </td>
                     <td>
                         <input type="checkbox" name="public-link-row" value="{{item.name}}" class="public-link-row__checkbox">
