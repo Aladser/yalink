@@ -25,15 +25,22 @@
                     <th>Название</th>
                     <th>Тип</th>
                     <th></th>
+                    <th></th>
                 </tr>
                 {% for item in items %}
                 <tr class="public-link-row">
                     <td class="w-50">{{item.name}}</td>
                     <td class="public-link-row__type">{% if item.type != None %}{{item.type}}{%else%}папка{% endif %}</td>
-                    <td><a href="{{item.url}}" class="btn btn-secondary">Скачать</a></td>
+                    <td>
+                        <a href="{{item.url}}" class="public-link-row__download-link btn btn-secondary">Скачать</a>
+                    </td>
+                    <td>
+                        <input type="checkbox" name="public-link-row" value="{{item.name}}" class="public-link-row__checkbox">
+                    </td>
                 </tr>
                 {% endfor %}
             </table>
+            <button id='multiple-download-button' class="btn btn-secondary d-none">Скачать несколько файлов</button>
         {% endif %}
 
     </div>
