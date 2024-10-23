@@ -27,9 +27,9 @@
                     <th></th>
                 </tr>
                 {% for item in items %}
-                <tr>
+                <tr class="public-link-row">
                     <td class="w-50">{{item.name}}</td>
-                    <td>{% if item.type != None %}{{item.type}}{%else%}папка{% endif %}</td>
+                    <td class="public-link-row__type">{% if item.type != None %}{{item.type}}{%else%}папка{% endif %}</td>
                     <td><a href="{{item.url}}" class="btn btn-secondary">Скачать</a></td>
                 </tr>
                 {% endfor %}

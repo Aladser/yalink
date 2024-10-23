@@ -76,7 +76,7 @@ class MainView(TemplateView):
             return context
 
         items_list = get_shared_files_from_public_link(download_api_link, response.json())
-        context['types'] = [''] + sorted(list(set(elem['type'] for elem in items_list)))
+        context['types'] = ['Все'] + sorted(list(set(elem['type'] for elem in items_list)))
         context['items'] = items_list
         context['is_items'] = len(items_list) > 0
 
