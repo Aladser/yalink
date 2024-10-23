@@ -17,7 +17,7 @@
             {% if is_items %}
                 <div class="mx-auto">
                     {% for item in items %}
-                    <a href="{{item.url}}" class="d-block border-bottom p-2 w-75 mx-auto text-black fw-bolder">{{item.name}}</a>
+                    <a href="{{item.url}}" class="d-block border-bottom p-2 w-75 mx-auto text-black fw-bolder" title="Нажмите для скачивания">{{item.name}}</a>
                     {% endfor %}
                 </div>
             {%endif%}
