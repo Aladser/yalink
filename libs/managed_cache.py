@@ -10,7 +10,7 @@ class ManagedCache:
     def get_data(key: str):
         """
         Получает данные из кэша
-        :param key: публичная страница
+        :param key: ключ
         """
 
         return cache.get(key)
@@ -19,7 +19,7 @@ class ManagedCache:
     def save_data(key: str, data):
         """
         Сохранят данные в кэше
-        :param key: ключ хранилища ключей страницы
+        :param key: ключ
         :param data: данные
         """
 

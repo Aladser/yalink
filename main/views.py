@@ -50,7 +50,7 @@ class MainView(TemplateView):
             context['error'] = "Не публичная ссылка на Яндекс диск"
             return context
 
-        # данные из экша
+        # данные из кэша
         cached_data = ManagedCache.get_data(public_link)
         if cached_data:
             context['items'], context['types'] = cached_data['items'], cached_data['types']
