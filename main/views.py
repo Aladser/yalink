@@ -6,11 +6,9 @@ import requests
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.views.generic import TemplateView
-from urllib3 import request
 
-from libs.get_dict_props import print_dict_props
 from libs.managed_cache import ManagedCache
-from main.services import get_shared_files_from_public_link
+from main.services import get_elements_of_public_link
 
 element_types = {
     "dir": 'Папка',
@@ -28,54 +26,45 @@ class MainView(TemplateView):
     template_name = 'index.html'
 
     def get(self, request, *args, **kwargs):
-
-        # перенравление на страницу авторизации, если идет запрос на получение содержимого ссылки без авторизации
+        # перенаправление на страницу авторизации, если идет запрос на получение содержимого ссылки без авторизации
         if 'link' in self.request.GET and not request.user.is_authenticated:
             return redirect(reverse("authen:login"))
-
         return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # url строки поиска
         context["search_url"] = os.getenv("DEFAULT_SEARCH_URL") or ""
-
         if not 'link' in self.request.GET:
             return context
 
-        public_link = context["search_url"] = self.request.GET['link']
-
+        public_link = cache_key = context["search_url"] = self.request.GET['link']
+        """ссылка на общедоступный Яндекс ресурс"""
         # проверка корректности ссылки
         public_link_components = urlparse(public_link)
-        yandex_disk_path = public_link_components.path.split('/')[1]
-        if public_link_components.netloc != "disk.yandex.ru" and yandex_disk_path != 'd':
+        if public_link_components.netloc not in ('yadi.sk', 'disk.yandex.ru'):
             context['error'] = "Не публичная ссылка на Яндекс диск"
             return context
 
-        # данные из кэша
-        """
-        cached_data = ManagedCache.get_data(public_link)
+        list_api_link = list_api_link_start + urllib.parse.quote(public_link)
+        """ссылка на просмотр содержимого публичной яндекс ссылки"""
+        download_api_link = general_download_api_link_start + urllib.parse.quote(public_link)
+        """ссылка на загрузку публичной яндекс ссылки"""
+        # если открывается внутренняя папка ссылки
+        if 'path' in  self.request.GET:
+            list_api_link += f"&path={urllib.parse.quote(self.request.GET['path'])}"
+            cache_key += self.request.GET['path']
+
+        # --- Получение из КЭШа ---
+        cached_data = ManagedCache.get_data(cache_key)
         if cached_data:
             context['items'], context['types'] = cached_data['items'], cached_data['types']
             context['is_items'] = len(context['items']) > 0
-
-            get_data(context['items'])
             return context
-        """
 
-        """ссылка на общедоступный Яндекс ресурс"""
-        list_api_link = list_api_link_start + urllib.parse.quote(public_link)
-        """ссылка на просмотр Яндекс ресурса"""
-        download_api_link = general_download_api_link_start + urllib.parse.quote(public_link)
-        """ссылка на загрузку Яндекс ресурса"""
-
-        # если открывается внутренная папка ссылки
-        if 'path' in  self.request.GET:
-            list_api_link += "&path=" + urllib.parse.quote(self.request.GET['path'])
-
+        # проверка публичной ссылки
         response = requests.get(public_link)
         if response.status_code != 200:
-            context['error'] = "Ошибка. Код ошибки " + str(response.status_code)
+            context['error'] = f"Ошибка. Код ошибки {str(response.status_code)}"
             return context
 
         # проверка ссылки просмотра файлов
@@ -90,14 +79,10 @@ class MainView(TemplateView):
             context['error'] = "Ошибка. Код ошибки " + str(response.status_code)
             return context
 
-        data = response.json()
-        data = data.get('_embedded', {})
-        [print_dict_props(el) for el in data['items']]
-
-        items_list = get_shared_files_from_public_link(download_api_link, list_api_link, response.json())
+        items_list = get_elements_of_public_link(public_link, download_api_link, response.json())
         context['types'] = ['Все'] + sorted(list(set(elem['type'] for elem in items_list)))
         context['items'] = items_list
         context['is_items'] = len(items_list) > 0
-        #ManagedCache.save_data(public_link, {"items": items_list, "types": context['types']})
+        ManagedCache.save_data(cache_key, {"items": items_list, "types": context['types']})
 
         return context
