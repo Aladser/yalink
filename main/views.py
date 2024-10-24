@@ -6,7 +6,9 @@ import requests
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.views.generic import TemplateView
+from urllib3 import request
 
+from libs.get_dict_props import print_dict_props
 from libs.managed_cache import ManagedCache
 from main.services import get_shared_files_from_public_link
 
@@ -51,11 +53,15 @@ class MainView(TemplateView):
             return context
 
         # данные из кэша
+        """
         cached_data = ManagedCache.get_data(public_link)
         if cached_data:
             context['items'], context['types'] = cached_data['items'], cached_data['types']
             context['is_items'] = len(context['items']) > 0
+
+            get_data(context['items'])
             return context
+        """
 
         """ссылка на общедоступный Яндекс ресурс"""
         list_api_link = list_api_link_start + urllib.parse.quote(public_link)
@@ -63,10 +69,13 @@ class MainView(TemplateView):
         download_api_link = general_download_api_link_start + urllib.parse.quote(public_link)
         """ссылка на загрузку Яндекс ресурса"""
 
+        # если открывается внутренная папка ссылки
+        if 'path' in  self.request.GET:
+            list_api_link += "&path=" + urllib.parse.quote(self.request.GET['path'])
+
         response = requests.get(public_link)
         if response.status_code != 200:
             context['error'] = "Ошибка. Код ошибки " + str(response.status_code)
-            print(cached_data)
             return context
 
         # проверка ссылки просмотра файлов
@@ -81,10 +90,14 @@ class MainView(TemplateView):
             context['error'] = "Ошибка. Код ошибки " + str(response.status_code)
             return context
 
-        items_list = get_shared_files_from_public_link(download_api_link, response.json())
+        data = response.json()
+        data = data.get('_embedded', {})
+        [print_dict_props(el) for el in data['items']]
+
+        items_list = get_shared_files_from_public_link(download_api_link, list_api_link, response.json())
         context['types'] = ['Все'] + sorted(list(set(elem['type'] for elem in items_list)))
         context['items'] = items_list
         context['is_items'] = len(items_list) > 0
-        ManagedCache.save_data(public_link, {"items": items_list, "types": context['types']})
+        #ManagedCache.save_data(public_link, {"items": items_list, "types": context['types']})
 
         return context
