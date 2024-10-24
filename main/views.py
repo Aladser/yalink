@@ -16,9 +16,6 @@ element_types = {
 }
 # начало ссылки на просмотр файлов
 list_api_link_start = 'https://cloud-api.yandex.net/v1/disk/public/resources?public_key='
-# начало ссылки на скачивание файла
-general_download_api_link_start = 'https://cloud-api.yandex.net/v1/disk/public/resources/download?public_key='
-
 
 class MainView(TemplateView):
     """Представление главной страницы"""
@@ -41,14 +38,13 @@ class MainView(TemplateView):
         """ссылка на общедоступный Яндекс ресурс"""
         # проверка корректности ссылки
         public_link_components = urlparse(public_link)
-        if public_link_components.netloc not in ('yadi.sk', 'disk.yandex.ru'):
+        print(public_link_components)
+        if public_link_components.netloc not in ('yadi.sk', 'disk.yandex.ru') or public_link_components.path.split('/')[1] != 'd':
             context['error'] = "Не публичная ссылка на Яндекс диск"
             return context
 
         list_api_link = list_api_link_start + urllib.parse.quote(public_link)
         """ссылка на просмотр содержимого публичной яндекс ссылки"""
-        download_api_link = general_download_api_link_start + urllib.parse.quote(public_link)
-        """ссылка на загрузку публичной яндекс ссылки"""
         # если открывается внутренняя папка ссылки
         if 'path' in  self.request.GET:
             list_api_link += f"&path={urllib.parse.quote(self.request.GET['path'])}"
@@ -59,12 +55,6 @@ class MainView(TemplateView):
         if cached_data:
             context['items'], context['types'] = cached_data['items'], cached_data['types']
             context['is_items'] = len(context['items']) > 0
-            return context
-
-        # проверка публичной ссылки
-        response = requests.get(public_link)
-        if response.status_code != 200:
-            context['error'] = f"Ошибка. Код ошибки {str(response.status_code)}"
             return context
 
         # проверка ссылки просмотра файлов
@@ -79,7 +69,7 @@ class MainView(TemplateView):
             context['error'] = "Ошибка. Код ошибки " + str(response.status_code)
             return context
 
-        items_list = get_elements_of_public_link(public_link, download_api_link, response.json())
+        items_list = get_elements_of_public_link(public_link, response.json())
         context['types'] = ['Все'] + sorted(list(set(elem['type'] for elem in items_list)))
         context['items'] = items_list
         context['is_items'] = len(items_list) > 0
