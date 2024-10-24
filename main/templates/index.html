@@ -29,10 +29,18 @@
                 </tr>
                 {% for item in items %}
                 <tr class="public-link-row">
-                    <td class="w-50">{{item.name}}</td>
+                    <td class="w-50">
+                        {% if item.type != 'Папка' %}
+                            {{item.name}}
+                        {% else %}
+                            <a href="{{item.url}}" class="text-black">{{item.name}}</a>
+                        {% endif  %}
+                    </td>
                     <td class="public-link-row__type">{% if item.type != None %}{{item.type}}{%else%}папка{% endif %}</td>
                     <td>
-                        <a href="{{item.url}}" download= target = '_blank' class="public-link-row__download-link btn btn-secondary">Скачать</a>
+                        {% if item.type != 'Папка' %}
+                            <a href="{{item.url}}" download= target='_blank' class="public-link-row__download-link btn btn-secondary">Скачать</a>
+                        {% endif %}
                     </td>
                     <td>
                         <input type="checkbox" name="public-link-row" value="{{item.name}}" class="public-link-row__checkbox">
