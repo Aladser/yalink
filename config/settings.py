@@ -96,7 +96,7 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# ПОЧТА
+# --- ПОЧТА ---
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = os.getenv("EMAIL_HOST")
 EMAIL_PORT = os.getenv("EMAIL_PORT")
@@ -107,10 +107,22 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 SERVER_EMAIL = EMAIL_HOST_USER
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-# АУТЕНТИФИКАЦИЯ И АВТОРИЗАЦИЯ
+# --- АУТЕНТИФИКАЦИЯ И АВТОРИЗАЦИЯ ---
 AUTH_USER_MODEL = "authen.User"
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
+
+# --- КЭШИРОВАНИЕ ---
+CACHED_ENABLED = True
+CACHED_TIME = 60
+if CACHED_ENABLED:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": os.getenv('CACHED_LOCATION'),
+            "TIMEOUT": CACHED_TIME
+        }
+    }
 
 # CELERY
 CELERY_BROKER_URL = os.getenv("DOCKER_CELERY_URL")
