@@ -35,7 +35,7 @@ def get_elements_of_public_link(public_link: str, download_api_link: str, respon
                 elem_link = get_elem_download_url_data.json()['href']
                 elem_type = item.get('media_type')
             else:
-                elem_link = os.getenv("SITE_ADDR") + '?link=' + public_link + '&path=' + urllib.parse.quote(item['path'])
+                elem_link = '/?link=' + public_link + '&path=' + urllib.parse.quote(item['path'])
                 elem_type = 'Папка'
             items_list.append({'name': elem_name, 'url': elem_link, 'type': elem_type})
 
