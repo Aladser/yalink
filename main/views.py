@@ -1,24 +1,12 @@
 import os
-import urllib
 from urllib.parse import urlparse
 
-import requests
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.views.generic import TemplateView
 
 from libs.managed_cache import ManagedCache
-from main.services import get_elements_of_public_link
-
-element_types = {
-    "dir": 'Папка',
-    "file": 'Файл'
-}
-# начало ссылки на просмотр файлов
-list_api_link_start = 'https://cloud-api.yandex.net/v1/disk/public/resources?public_key='
-# начало ссылки на скачивание файла
-general_download_api_link_start = 'https://cloud-api.yandex.net/v1/disk/public/resources/download?public_key='
-
+from libs.yandex_disk_downloader import YandexDiskDownloader
 
 class MainView(TemplateView):
     """Представление главной страницы"""
@@ -37,52 +25,33 @@ class MainView(TemplateView):
         if not 'link' in self.request.GET:
             return context
 
-        public_link = cache_key = context["search_url"] = self.request.GET['link']
-        """ссылка на общедоступный Яндекс ресурс"""
         # проверка корректности ссылки
-        public_link_components = urlparse(public_link)
-        if public_link_components.netloc not in ('yadi.sk', 'disk.yandex.ru'):
-            context['error'] = "Не публичная ссылка на Яндекс диск"
+        public_link_components = urlparse(self.request.GET['link'])
+        if public_link_components.netloc not in ('yadi.sk', 'disk.yandex.ru') or public_link_components.path.split('/')[1] != 'd':
+            context['error'] = "Ссылка не является публичной ссылкой на Яндекс диск"
             return context
 
-        list_api_link = list_api_link_start + urllib.parse.quote(public_link)
-        """ссылка на просмотр содержимого публичной яндекс ссылки"""
-        download_api_link = general_download_api_link_start + urllib.parse.quote(public_link)
-        """ссылка на загрузку публичной яндекс ссылки"""
-        # если открывается внутренняя папка ссылки
-        if 'path' in  self.request.GET:
-            list_api_link += f"&path={urllib.parse.quote(self.request.GET['path'])}"
-            cache_key += self.request.GET['path']
+        public_link = context["search_url"] = self.request.GET['link']
+        """ссылка на общедоступный Яндекс ресурс"""
+        public_link_path = self.request.GET['path'] if 'path' in  self.request.GET else None
+        """путь элемента ссылки"""
 
         # --- Получение из КЭШа ---
+        cache_key = public_link + public_link_path if public_link_path else public_link
         cached_data = ManagedCache.get_data(cache_key)
         if cached_data:
             context['items'], context['types'] = cached_data['items'], cached_data['types']
             context['is_items'] = len(context['items']) > 0
             return context
 
-        # проверка публичной ссылки
-        response = requests.get(public_link)
-        if response.status_code != 200:
-            context['error'] = f"Ошибка. Код ошибки {str(response.status_code)}"
-            return context
-
-        # проверка ссылки просмотра файлов
-        response = requests.get(list_api_link)
-        if response.status_code == 404:
-            context['error'] = "Ссылка не найдена"
-            return context
-        elif response.status_code == 500:
-            context['error'] = "Неправильная ссылка"
-            return context
-        elif response.status_code != 200:
-            context['error'] = "Ошибка. Код ошибки " + str(response.status_code)
-            return context
-
-        items_list = get_elements_of_public_link(public_link, download_api_link, response.json())
-        context['types'] = ['Все'] + sorted(list(set(elem['type'] for elem in items_list)))
-        context['items'] = items_list
-        context['is_items'] = len(items_list) > 0
-        ManagedCache.save_data(cache_key, {"items": items_list, "types": context['types']})
+        yadi_request_data = YandexDiskDownloader.get_elements_of_public_link(public_link, public_link_path)
+        if yadi_request_data['code'] == 200:
+            data = yadi_request_data['data']
+            context['types'] = ['Все'] + sorted(list(set(item['type'] for item in data)))
+            context['items'] = data
+            context['is_items'] = len(data) > 0
+            ManagedCache.save_data(cache_key, {"items": data, "types": context['types']})
+        else:
+            context["error"] = yadi_request_data['data']
 
         return context
