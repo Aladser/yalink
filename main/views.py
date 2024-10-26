@@ -1,13 +1,13 @@
 import os
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import urlparse
 
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.views.generic import TemplateView
-from urllib3 import request
 
 from libs.managed_cache import ManagedCache
 from libs.yandex_disk_downloader import YandexDiskDownloader
+
 
 class MainView(TemplateView):
     """Представление главной страницы"""

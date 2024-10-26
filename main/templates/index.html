@@ -15,17 +15,28 @@
             <p class="fs-4">{{error}}</p>
         {% elif items %}
             <h4 class="text-center fw-bolder color-jade p-3">Содержимое ссылки</h4>
-            <div class="d-flex justify-content-between">
-                {% if prev_url %}<a href="{{prev_url}}" class="btn-theme p-1 border-0">Назад</a>{% endif %}
-                <div>
-                    <span class="px-1">Тип:</span>
+            {% if prev_url %}
+                <div class="d-flex justify-content-between">
+                    <a href="{{prev_url}}" class="btn-theme p-1 border-0">Назад</a>
+                    <div>
+                        <span>Тип:</span>
+                        <select class="p-2 rounded" id="type-select">
+                            {% for type in types %}
+                                <option>{% if type != None %}{{type}}{%else%}папка{% endif %}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            {% else %}
+                <div class="float-end">
+                    <span>Тип:</span>
                     <select class="p-2 rounded" id="type-select">
                         {% for type in types %}
-                        <option>{% if type != None %}{{type}}{%else%}папка{% endif %}</option>
+                            <option>{% if type != None %}{{type}}{%else%}папка{% endif %}</option>
                         {% endfor %}
                     </select>
                 </div>
-            </div>
+            {% endif %}
 
             <table class="table mx-auto w-100">
                 <tr>
