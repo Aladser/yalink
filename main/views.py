@@ -63,6 +63,8 @@ class MainView(TemplateView):
             context['types'] = ['Все'] + sorted(list(set(item['type'] for item in data)))
             context['items'] = data
             context['is_items'] = len(data) > 0
+            context['resource_download_link'] = YandexDiskDownloader.get_resource_download_link(public_link)
+
             ManagedCache.save_data(cache_key, {"items": data, "types": context['types']})
         else:
             context["error"] = yadi_request_data['data']

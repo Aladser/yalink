@@ -7,6 +7,7 @@
         <form method="GET" action="{% url 'index' %}" class="mb-4">
             <input type="url" name="link" placeholder="Введите ссылку" class="w-50 p-1 rounded border-1" required value="{{search_url}}">
             <input type="submit" value="Получить" class="btn-theme p-1 border-0">
+            {% if items %}<a href="{{resource_download_link}}" class="btn-theme p-1 border-0">Скачать все</a>{% endif %}
         </form>
 
         {% if error%}
