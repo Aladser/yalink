@@ -1,9 +1,10 @@
 import os
-from urllib.parse import urlparse
+from urllib.parse import urlparse, parse_qs
 
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.views.generic import TemplateView
+from urllib3 import request
 
 from libs.managed_cache import ManagedCache
 from libs.yandex_disk_downloader import YandexDiskDownloader
@@ -21,6 +22,7 @@ class MainView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['prev_uri'] = None
         context["search_url"] = os.getenv("DEFAULT_SEARCH_URL") or ""
         if not 'link' in self.request.GET:
             return context
@@ -33,8 +35,19 @@ class MainView(TemplateView):
 
         public_link = context["search_url"] = self.request.GET['link']
         """ссылка на общедоступный Яндекс ресурс"""
-        public_link_path = self.request.GET['path'] if 'path' in  self.request.GET else None
+        public_link_path = None
         """путь элемента ссылки"""
+
+        if 'path' in self.request.GET:
+            public_link_path = self.request.GET['path']
+            # ссылка на папку выше, если находимся внутри папки ресурса
+            prev_path_list = self.request.GET['path'].split('/')[:-1]
+            prev_path = '/'.join(prev_path_list)
+            context['prev_url'] = '?link=' + self.request.GET['link']
+            if prev_path != '':
+                context['prev_url'] += '&path='+ '/'.join(prev_path_list)
+        else:
+            context['prev_url'] = False
 
         # --- Получение из КЭШа ---
         cache_key = public_link + public_link_path if public_link_path else public_link
@@ -50,6 +63,8 @@ class MainView(TemplateView):
             context['types'] = ['Все'] + sorted(list(set(item['type'] for item in data)))
             context['items'] = data
             context['is_items'] = len(data) > 0
+            context['resource_download_link'] = YandexDiskDownloader.get_resource_download_link(public_link)
+
             ManagedCache.save_data(cache_key, {"items": data, "types": context['types']})
         else:
             context["error"] = yadi_request_data['data']

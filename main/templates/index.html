@@ -7,6 +7,7 @@
         <form method="GET" action="{% url 'index' %}" class="mb-4">
             <input type="url" name="link" placeholder="Введите ссылку" class="w-50 p-1 rounded border-1" required value="{{search_url}}">
             <input type="submit" value="Получить" class="btn-theme p-1 border-0">
+            {% if items %}<a href="{{resource_download_link}}" class="btn-theme p-1 border-0">Скачать все</a>{% endif %}
         </form>
 
         {% if error%}
@@ -14,12 +15,18 @@
             <p class="fs-4">{{error}}</p>
         {% elif items %}
             <h4 class="text-center fw-bolder color-jade p-3">Содержимое ссылки</h4>
-            <span>Тип:</span>
-            <select class="p-2" id="type-select">
-                {% for type in types %}
-                <option>{% if type != None %}{{type}}{%else%}папка{% endif %}</option>
-                {% endfor %}
-            </select>
+            <div class="d-flex justify-content-between">
+                {% if prev_url %}<a href="{{prev_url}}" class="btn-theme p-1 border-0">Назад</a>{% endif %}
+                <div>
+                    <span class="px-1">Тип:</span>
+                    <select class="p-2 rounded" id="type-select">
+                        {% for type in types %}
+                        <option>{% if type != None %}{{type}}{%else%}папка{% endif %}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
             <table class="table mx-auto w-100">
                 <tr>
                     <th>Название</th>

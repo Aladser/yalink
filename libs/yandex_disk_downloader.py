@@ -62,3 +62,16 @@ class YandexDiskDownloader:
                 items_list.append({'name': elem_name, 'url': elem_link, 'type': elem_type})
 
         return {'code': 200, "data": items_list}
+
+    def get_resource_download_link(public_link: str) -> str | None:
+        """
+        Возвращает ссылку на скачивание ресурса
+        """
+
+        decoded_public_link = urllib.parse.quote(public_link)
+        download_link = YandexDiskDownloader.general_download_api_link_start + decoded_public_link
+        download_link_request_response = requests.get(download_link)
+        if download_link_request_response.status_code == 200:
+            return download_link_request_response.json()['href']
+        else:
+            raise None
