@@ -54,6 +54,7 @@ class MainView(TemplateView):
         cached_data = ManagedCache.get_data(cache_key)
         if cached_data:
             context['items'], context['types'] = cached_data['items'], cached_data['types']
+            context['resource_download_link'] = cached_data['resource_download_link']
             context['is_items'] = len(context['items']) > 0
             return context
 
@@ -63,9 +64,17 @@ class MainView(TemplateView):
             context['types'] = ['Все'] + sorted(list(set(item['type'] for item in data)))
             context['items'] = data
             context['is_items'] = len(data) > 0
-            context['resource_download_link'] = YandexDiskDownloader.get_resource_download_link(public_link)
+            resource_download_link = YandexDiskDownloader.get_resource_download_link(public_link)
+            context['resource_download_link'] = resource_download_link
 
-            ManagedCache.save_data(cache_key, {"items": data, "types": context['types']})
+            ManagedCache.save_data(
+                cache_key,
+                {
+                    "items": data,
+                    "types": context['types'],
+                    'resource_download_link': resource_download_link
+                }
+            )
         else:
             context["error"] = yadi_request_data['data']
 
