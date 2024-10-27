@@ -10,8 +10,13 @@
 
             <div class="d-flex align-items-center">
                 {% if user.is_authenticated %}
-                    <img src="{{user.avatar.name|full_image_path}}" class="user-avatar me-2">
-                    <a href="{% url 'authen:profile' %}" class="d-flex align-items-center me-2 fw-bolder text-theme"> {{user}}</a>
+                    {% if user.auth_type == 'db' %}
+                        <img src="{{user.avatar.name|full_image_path}}" class="user-avatar me-2">
+                        <a href="{% url 'authen:profile' %}" class="d-flex align-items-center me-2 fw-bolder text-theme">{{user}}</a>
+                    {% else %}
+                        <img src="{{user.avatar}}" class="user-avatar me-2">
+                        <span class="d-flex align-items-center me-2 fw-bolder text-theme">{{user}}</span>
+                    {% endif %}
                 {% endif %}
                 <nav>
                     {% if user.is_authenticated %}

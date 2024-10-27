@@ -2,6 +2,7 @@ import os
 from secrets import token_hex
 from urllib.request import Request
 
+import requests
 from django.contrib.auth import login as auth_login
 from django.contrib.auth.views import LoginView, PasswordResetCompleteView
 from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmView
@@ -61,7 +62,21 @@ def yalogin(request: Request)->HttpResponseRedirect:
         user = User()
         user.email = email
 
+    # Информация о пользователе
+    url = "https://login.yandex.ru/info"
+    headers = {'Authorization': f'OAuth {token["access_token"]}'}
+    user_info = requests.get(url, headers=headers).json()
+    default_avatar_id = user_info.get('default_avatar_id')
+    avatar_url = f"https://avatars.yandex.net/get-yapic/{default_avatar_id}/islands-200"
+
+    if user.avatar != avatar_url:
+        user.avatar = avatar_url
+    if user.first_name == user_info['first_name']:
+        user.first_name = user_info['first_name']
+    if user.first_name == user_info['last_name']:
+        user.first_name = user_info['last_name']
     user.yandex_token = token["access_token"]
+    user.auth_type = 'yandex'
     user.save()
     auth_login(request, user)
 

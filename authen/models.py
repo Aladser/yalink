@@ -12,6 +12,7 @@ class User(AbstractUser):
     phone = models.CharField(verbose_name='телефон', unique=True, max_length=20, **NULLABLE)
     avatar = models.ImageField(verbose_name='аватар', upload_to='images/', **NULLABLE)
     token = models.CharField(verbose_name="Токен", **NULLABLE, max_length=100)
+    auth_type = models.CharField(verbose_name="Тип авторизации", default="db")
     yandex_token = models.CharField(verbose_name="Яндекс токен", **NULLABLE, max_length=255)
 
     USERNAME_FIELD = "email"
