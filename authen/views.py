@@ -71,9 +71,9 @@ def yalogin(request: Request)->HttpResponseRedirect:
 
     if user.avatar != avatar_url:
         user.avatar = avatar_url
-    if user.first_name == user_info['first_name']:
+    if user.first_name != user_info['first_name']:
         user.first_name = user_info['first_name']
-    if user.first_name == user_info['last_name']:
+    if user.first_name != user_info['last_name']:
         user.first_name = user_info['last_name']
     user.yandex_token = token["access_token"]
     user.auth_type = 'yandex'
