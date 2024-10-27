@@ -4,12 +4,12 @@ from urllib.request import Request
 
 import requests
 from django.contrib.auth import login as auth_login
-from django.contrib.auth.views import LoginView, PasswordResetCompleteView
+from django.contrib.auth.views import LoginView, PasswordResetCompleteView, RedirectURLMixin
 from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmView
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, UpdateView, TemplateView
+from django.views.generic import CreateView, UpdateView, TemplateView, FormView
 from requests_oauthlib import OAuth2Session
 
 from authen.forms import RegisterForm, AuthForm, ProfileForm, CustomPasswordResetForm, CustomSetPasswordForm
@@ -41,7 +41,6 @@ class UserLoginView(AuthenMixin, LoginView):
         context['authorization_url'], state = oauth.authorization_url(YANDEX_AUTH_URL, force_confirm="true")
 
         return context
-
 
 # АВТОРИЗАЦИЯ ЧЕРЕЗ ЯНДЕКС
 def yalogin(request: Request)->HttpResponseRedirect:

@@ -17,6 +17,12 @@ class AuthForm(AuthenticationForm):
         model = User
         fields = '__all__'
 
+    def confirm_login_allowed(self, user):
+        if user.is_active:
+            # установка типа авторизации db при авторизации через форму
+            user.auth_type = "db"
+            user.save()
+        super().confirm_login_allowed(user)
 
 class RegisterForm(UserCreationForm):
     def __init__(self, *args, **kwargs):
@@ -26,7 +32,6 @@ class RegisterForm(UserCreationForm):
     class Meta:
         model = User
         fields = ('email', 'password1', 'password2')
-
 
 class ProfileForm(UserChangeForm):
     password = None
