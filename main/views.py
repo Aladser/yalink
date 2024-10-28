@@ -22,7 +22,7 @@ class MainView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['prev_uri'] = None
+        context['prev_url'] = None
         context["search_url"] = os.getenv("DEFAULT_SEARCH_URL") or ""
         if not 'link' in self.request.GET:
             return context
@@ -43,9 +43,9 @@ class MainView(TemplateView):
             # ссылка на папку выше, если находимся внутри папки ресурса
             prev_path_list = self.request.GET['path'].split('/')[:-1]
             prev_path = '/'.join(prev_path_list)
-            context['prev_url'] = '?link=' + self.request.GET['link']
+            context['prev_url'] = f"?link={self.request.GET['link']}"
             if prev_path != '':
-                context['prev_url'] += '&path='+ '/'.join(prev_path_list)
+                context['prev_url'] += f"&path={'/'.join(prev_path_list)}"
         else:
             context['prev_url'] = False
 
