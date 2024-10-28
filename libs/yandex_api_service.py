@@ -2,7 +2,7 @@ import os
 import urllib
 import requests
 from requests_oauthlib import OAuth2Session
-
+from urllib.parse import urlparse
 from authen.models import User
 
 
@@ -148,3 +148,14 @@ class YandexAPIService:
 
         user.save()
         return user
+
+    @staticmethod
+    def is_valid_public_url(url:str) -> False:
+        """
+        Проверяет корректность ссылки
+        """
+
+        public_link_components = urlparse(url)
+        if public_link_components.netloc not in ('yadi.sk', 'disk.yandex.ru') or public_link_components.path.split('/')[1] != 'd':
+            return False
+        return True

@@ -1,5 +1,4 @@
 import os
-from urllib.parse import urlparse
 
 from django.shortcuts import redirect
 from django.urls import reverse
@@ -27,9 +26,7 @@ class MainView(TemplateView):
         if not 'link' in self.request.GET:
             return context
 
-        # проверка корректности ссылки
-        public_link_components = urlparse(self.request.GET['link'])
-        if public_link_components.netloc not in ('yadi.sk', 'disk.yandex.ru') or public_link_components.path.split('/')[1] != 'd':
+        if not YandexAPIService.is_valid_public_url(self.request.GET['link']):
             context['error'] = "Ссылка не является публичной ссылкой на Яндекс диск"
             return context
 
