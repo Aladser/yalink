@@ -6,7 +6,7 @@ from django.urls import reverse
 from django.views.generic import TemplateView
 
 from libs.managed_cache import ManagedCache
-from libs.yandex_disk_downloader import YandexDiskDownloader
+from libs.yandex_api_service import YandexAPIService
 
 
 class MainView(TemplateView):
@@ -58,13 +58,13 @@ class MainView(TemplateView):
             context['is_items'] = len(context['items']) > 0
             return context
 
-        yadi_request_data = YandexDiskDownloader.get_elements_of_public_link(public_link, public_link_path)
+        yadi_request_data = YandexAPIService.get_elements_of_yadisk_public_link(public_link, public_link_path)
         if yadi_request_data['code'] == 200:
             data = yadi_request_data['data']
             context['types'] = ['Все'] + sorted(list(set(item['type'] for item in data)))
             context['items'] = data
             context['is_items'] = len(data) > 0
-            resource_download_link = YandexDiskDownloader.get_resource_download_link(public_link)
+            resource_download_link = YandexAPIService.get_yadisk_resource_download_link(public_link)
             context['resource_download_link'] = resource_download_link
 
             ManagedCache.save_data(
