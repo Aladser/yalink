@@ -1,16 +1,13 @@
-import os
-from os import access
 from secrets import token_hex
 from urllib.request import Request
 
 from django.contrib.auth import login as auth_login
-from django.contrib.auth.views import LoginView, PasswordResetCompleteView
+from django.contrib.auth.views import LoginView, PasswordResetCompleteView, INTERNAL_RESET_SESSION_TOKEN
 from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmView
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, UpdateView, TemplateView
-from requests_oauthlib import OAuth2Session
 
 from authen.forms import RegisterForm, AuthForm, ProfileForm, CustomPasswordResetForm, CustomSetPasswordForm
 from authen.models import User
@@ -18,6 +15,7 @@ from authen.services import verificate_user
 from authen.tasks import send_email
 from libs.authen_mixin import AuthenMixin
 from libs.yandex_api_service import YandexAPIService
+
 
 # АВТОРИЗАЦИЯ
 class UserLoginView(AuthenMixin, LoginView):
@@ -97,8 +95,6 @@ class CustomPasswordResetView(PasswordResetView):
     form_class = CustomPasswordResetForm
     success_url = reverse_lazy('authen:password_reset_done')
 
-
-
 # СБРОС ПАРОЛЯ - ВВОД НОВОГО ПАРОЛЯ
 class CustomUserPasswordResetConfirmView(PasswordResetConfirmView):
     title = "ввод нового пароля"
@@ -111,6 +107,16 @@ class CustomUserPasswordResetConfirmView(PasswordResetConfirmView):
     form_class = CustomSetPasswordForm
     success_url = reverse_lazy('authen:password_reset_complete')
 
+    def form_valid(self, form):
+        # переключение авторизации, если была не db
+        user = form.save()
+        if user != 'db':
+            user.auth_type = 'db'
+            user.save()
+        del self.request.session[INTERNAL_RESET_SESSION_TOKEN]
+        if self.post_reset_login:
+            auth_login(self.request, user, self.post_reset_login_backend)
+        return HttpResponseRedirect(self.get_success_url())
 
 # СБРОС ПАРОЛЯ - ПРОВЕРКА ВВОДА НОВОГО ПАРОЛЯ
 class CustomPasswordResetCompleteView(PasswordResetCompleteView):
@@ -119,7 +125,6 @@ class CustomPasswordResetCompleteView(PasswordResetCompleteView):
         'title': title,
         'header': title.capitalize(),
     }
-
 
 # ПОДТВЕРЖДЕНИЕ ПОЧТЫ
 class VerificateEmailView(TemplateView):

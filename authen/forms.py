@@ -24,6 +24,19 @@ class AuthForm(AuthenticationForm):
             user.save()
         super().confirm_login_allowed(user)
 
+    def clean(self):
+        # если последняя авторизация через яндекс, сброс авторизации для бд
+        username = self.cleaned_data.get("username")
+        user = User.objects.get(email=username)
+        if user.auth_type != 'db':
+            raise ValidationError(
+                "Неверный пароль",
+                code="invalid_login",
+                params={"username": self.username_field.verbose_name},
+            )
+        return super().clean()
+
+
 class RegisterForm(UserCreationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -32,6 +45,7 @@ class RegisterForm(UserCreationForm):
     class Meta:
         model = User
         fields = ('email', 'password1', 'password2')
+
 
 class ProfileForm(UserChangeForm):
     password = None
@@ -49,10 +63,10 @@ class CustomPasswordResetForm(PasswordResetForm):
     email = forms.EmailField(
         max_length=254,
         widget=forms.EmailInput(
-        attrs={
-            'class': 'form-control',
-            'placeholder': 'Введите электронную почту',
-            "autocomplete": "email"}
+            attrs={
+                'class': 'form-control',
+                'placeholder': 'Введите электронную почту',
+                "autocomplete": "email"}
         )
     )
 
