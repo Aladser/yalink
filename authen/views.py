@@ -1,15 +1,15 @@
 import os
+from os import access
 from secrets import token_hex
 from urllib.request import Request
 
-import requests
 from django.contrib.auth import login as auth_login
-from django.contrib.auth.views import LoginView, PasswordResetCompleteView, RedirectURLMixin
+from django.contrib.auth.views import LoginView, PasswordResetCompleteView
 from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmView
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, UpdateView, TemplateView, FormView
+from django.views.generic import CreateView, UpdateView, TemplateView
 from requests_oauthlib import OAuth2Session
 
 from authen.forms import RegisterForm, AuthForm, ProfileForm, CustomPasswordResetForm, CustomSetPasswordForm
@@ -17,12 +17,7 @@ from authen.models import User
 from authen.services import verificate_user
 from authen.tasks import send_email
 from libs.authen_mixin import AuthenMixin
-
-YANDEX_CLIENT_ID = os.getenv("ClientID")
-YANDEX_CLIENT_SECRET = os.getenv("ClientSecret")
-YANDEX_AUTH_URL = "https://oauth.yandex.ru/authorize"
-YANDEX_TOKEN_URL = "https://oauth.yandex.ru/token"
-
+from libs.yandex_api_service import YandexAPIService
 
 # АВТОРИЗАЦИЯ
 class UserLoginView(AuthenMixin, LoginView):
@@ -35,52 +30,17 @@ class UserLoginView(AuthenMixin, LoginView):
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data()
-
-        # ссылка яндекс-авторизации
-        oauth = OAuth2Session(client_id=YANDEX_CLIENT_ID)
-        context['authorization_url'], state = oauth.authorization_url(YANDEX_AUTH_URL, force_confirm="true")
-
+        context['authorization_url'] = YandexAPIService.get_authorization_url()
         return context
 
 # АВТОРИЗАЦИЯ ЧЕРЕЗ ЯНДЕКС
 def yalogin(request: Request)->HttpResponseRedirect:
-    email = request.GET['cid'] + "@yandex.ru"
-
-    oauth = OAuth2Session(client_id=YANDEX_CLIENT_ID)
-    token = oauth.fetch_token(
-        token_url=YANDEX_TOKEN_URL,
-        code=request.GET['code'],
-        client_secret=YANDEX_CLIENT_SECRET
-    )
-
-    # поиск пользователя
-    user = User.objects.filter(email=email)
-    if user.exists():
-        user = user.first()
-    else:
-        user = User()
-        user.email = email
-
-    # Информация о пользователе
-    url = "https://login.yandex.ru/info"
-    headers = {'Authorization': f'OAuth {token["access_token"]}'}
-    user_info = requests.get(url, headers=headers).json()
-    default_avatar_id = user_info.get('default_avatar_id')
-    avatar_url = f"https://avatars.yandex.net/get-yapic/{default_avatar_id}/islands-200"
-
-    if user.avatar != avatar_url:
-        user.avatar = avatar_url
-    if user.first_name != user_info['first_name']:
-        user.first_name = user_info['first_name']
-    if user.first_name != user_info['last_name']:
-        user.first_name = user_info['last_name']
-    user.yandex_token = token["access_token"]
-    user.auth_type = 'yandex'
-    user.save()
+    access_token = YandexAPIService.get_access_token(request.GET['code'])
+    user_info = YandexAPIService.get_userinfo(access_token)
+    user = YandexAPIService.get_or_create_user(user_info, access_token)
     auth_login(request, user)
 
     return HttpResponseRedirect('/')
-
 
 # РЕГИСТРАЦИЯ
 class RegisterView(AuthenMixin, CreateView):

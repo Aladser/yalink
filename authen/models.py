@@ -1,8 +1,7 @@
-import os.path
-
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from config.settings import NULLABLE, MEDIA_ROOT
+
+from config.settings import NULLABLE
 
 
 class User(AbstractUser):
@@ -13,7 +12,7 @@ class User(AbstractUser):
     avatar = models.ImageField(verbose_name='аватар', upload_to='images/', **NULLABLE)
     token = models.CharField(verbose_name="Токен", **NULLABLE, max_length=100)
     auth_type = models.CharField(verbose_name="Тип авторизации", default="db")
-    yandex_token = models.CharField(verbose_name="Яндекс токен", **NULLABLE, max_length=255)
+    yandex_token = models.CharField(verbose_name="Яндекс токен", max_length=255, default=None, **NULLABLE)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []

@@ -6,7 +6,7 @@ from django.urls import reverse
 from django.views.generic import TemplateView
 
 from libs.managed_cache import ManagedCache
-from libs.yandex_disk_downloader import YandexDiskDownloader
+from libs.yandex_api_service import YandexAPIService
 
 
 class MainView(TemplateView):
@@ -22,7 +22,7 @@ class MainView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['prev_uri'] = None
+        context['prev_url'] = None
         context["search_url"] = os.getenv("DEFAULT_SEARCH_URL") or ""
         if not 'link' in self.request.GET:
             return context
@@ -43,9 +43,9 @@ class MainView(TemplateView):
             # ссылка на папку выше, если находимся внутри папки ресурса
             prev_path_list = self.request.GET['path'].split('/')[:-1]
             prev_path = '/'.join(prev_path_list)
-            context['prev_url'] = '?link=' + self.request.GET['link']
+            context['prev_url'] = f"?link={self.request.GET['link']}"
             if prev_path != '':
-                context['prev_url'] += '&path='+ '/'.join(prev_path_list)
+                context['prev_url'] += f"&path={'/'.join(prev_path_list)}"
         else:
             context['prev_url'] = False
 
@@ -58,13 +58,13 @@ class MainView(TemplateView):
             context['is_items'] = len(context['items']) > 0
             return context
 
-        yadi_request_data = YandexDiskDownloader.get_elements_of_public_link(public_link, public_link_path)
+        yadi_request_data = YandexAPIService.get_elements_of_yadisk_public_link(public_link, public_link_path)
         if yadi_request_data['code'] == 200:
             data = yadi_request_data['data']
             context['types'] = ['Все'] + sorted(list(set(item['type'] for item in data)))
             context['items'] = data
             context['is_items'] = len(data) > 0
-            resource_download_link = YandexDiskDownloader.get_resource_download_link(public_link)
+            resource_download_link = YandexAPIService.get_yadisk_resource_download_link(public_link)
             context['resource_download_link'] = resource_download_link
 
             ManagedCache.save_data(
